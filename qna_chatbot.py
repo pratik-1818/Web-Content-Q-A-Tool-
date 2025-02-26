@@ -1,3 +1,4 @@
+import os
 import requests
 from bs4 import BeautifulSoup
 import streamlit as st
@@ -14,7 +15,10 @@ def extract_text_from_url(url, max_chars=4000):
         return None
 
 def ask_groq(question, context):
-    chat = ChatGroq(groq_api_key="api key")  # Replace with actual key
+    groq_api_key = os.getenv("GROQ_API_KEY")  # Get API key from environment variable
+    if not groq_api_key:
+        return "Error: GROQ_API_KEY is not set in the environment variables."
+    chat = ChatGroq(groq_api_key=groq_api_key)
     response = chat.invoke([HumanMessage(content=f"Context: {context}\nQuestion: {question}")])
     return response.content
 

@@ -1,3 +1,4 @@
+import os
 import requests
 from bs4 import BeautifulSoup
 import streamlit as st
@@ -11,6 +12,7 @@ from langchain.embeddings import HuggingFaceEmbeddings
 embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
 def extract_text_from_url(url, max_chars=5000):
+    """Fetches and extracts text from a given URL."""
     response = requests.get(url)
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -19,7 +21,7 @@ def extract_text_from_url(url, max_chars=5000):
     return None
 
 def query_vector_db(question, text):
-    # Split text into smaller chunks
+    """Splits text, stores it in FAISS vector database, and retrieves relevant context."""
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
     chunks = text_splitter.split_text(text)
     
@@ -33,10 +35,16 @@ def query_vector_db(question, text):
     return context
 
 def ask_groq(question, context):
-    chat = ChatGroq(groq_api_key="api key")  # Replace with actual key
+    """Sends user question along with context to Groq API and returns the response."""
+    groq_api_key = os.getenv("GROQ_API_KEY")  # Securely fetch API key from environment variables
+    if not groq_api_key:
+        return "Error: GROQ_API_KEY is not set in the environment variables."
+
+    chat = ChatGroq(groq_api_key=groq_api_key)
     response = chat.invoke([HumanMessage(content=f"Context: {context}\nQuestion: {question}")])
     return response.content
 
+# Streamlit UI
 st.title("Web Content Q&A Tool")
 url = st.text_input("Enter the URL:")
 question = st.text_input("Enter your question:")

@@ -61,3 +61,8 @@ if st.button("Get Answer"):
             st.error("Failed to extract content from the URL.")
     else:
         st.warning("Please enter both a URL and a question.")
+
+# Ensure the correct port is used for Render
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8501))
+    st.run(server_port=port)
